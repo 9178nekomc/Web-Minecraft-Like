@@ -1,0 +1,5 @@
+Voxel Creative sample project
+
+You may use, modify, and redistribute the source code and original texture assets in this archive for personal or commercial projects, provided that this notice is retained.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. This project does not include third-party game assets, trademarks, or proprietary code.

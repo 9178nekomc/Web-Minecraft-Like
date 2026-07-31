@@ -1,0 +1,11 @@
+WINDOWS LAN START
+=================
+
+1. Install Node.js 18 or newer.
+2. Close any old Python server using port 8080.
+3. Double-click start_lan.bat (or the Chinese-named launcher).
+4. Keep the terminal window open.
+5. Host opens http://localhost:8080
+6. Other LAN devices open the http://192.168.x.x:8080 address printed by the server.
+
+A line beginning with "Serving HTTP on" means Python static hosting is running; that mode does not support multiplayer.

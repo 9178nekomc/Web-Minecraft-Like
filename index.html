@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#8ec8ff">
+  <link rel="icon" href="data:,">
+  <title>Voxel Survival — 局域网生存与创造</title>
+  <link rel="stylesheet" href="style.css?v=inventory-crafting-textures-v9">
+</head>
+<body>
+  <canvas id="game" aria-label="Voxel Creative 3D 游戏画面"></canvas>
+
+  <div id="sky-vignette" aria-hidden="true"></div>
+  <div id="crosshair" aria-hidden="true"><i></i><b></b></div>
+
+  <section id="hud" aria-live="polite">
+    <div id="debug-panel">
+      <div class="brand-small">VOXEL SURVIVAL</div>
+      <div id="debug-line">生成世界中…</div>
+      <div id="target-line">创造模式 · 无水世界</div>
+    </div>
+    <div id="help-chip">ESC 暂停 · E 背包 · 双击空格切换飞行</div>
+    <div id="lan-hud-badge">单人世界</div>
+    <div id="player-tags" aria-hidden="true"></div>
+    <div id="hotbar" aria-label="快捷栏"></div>
+    <div id="held-block" class="empty" aria-hidden="true"><span class="face top"></span><span class="face left"></span><span class="face right"></span></div>
+  </section>
+
+  <div id="toast" role="status"></div>
+
+  <main id="menu" class="visible">
+    <div class="panel main-panel">
+      <div class="logo-wrap">
+        <div class="logo-shadow">VOXEL</div>
+        <h1>VOXEL</h1>
+        <div class="subtitle">SURVIVAL + CREATIVE</div>
+        <span class="splash">SURVIVAL · CRAFTING · LAN PVP!</span>
+      </div>
+      <p class="intro">原创网页体素生存沙盒 · 工具与硬度 · 合成熔炼 · 动物与食物 · 主机权威局域网 PVP</p>
+      <div id="mode-choice" class="mode-choice" aria-label="游戏模式选择">
+        <button id="survival-mode-btn" class="pixel-button primary" type="button">生存模式 ✓</button>
+        <button id="creative-mode-btn" class="pixel-button" type="button">创造模式</button>
+      </div>
+      <div id="mode-description" class="mode-description">当前：生存模式 · 有生命、饥饿、工具耐久、挖掘硬度和生物</div>
+      <button id="play-button" class="pixel-button primary">开始单人世界</button>
+      <div class="button-row four">
+        <button id="lan-button" class="pixel-button network">局域网联机</button>
+        <button id="new-world-button" class="pixel-button">生成新世界</button>
+        <button id="settings-button" class="pixel-button">设置</button>
+        <button id="quality-button" class="pixel-button">视距：高</button>
+      </div>
+      <div id="menu-network-status" class="menu-network-status">离线 · 单人世界</div>
+      <div class="controls-grid">
+        <div><kbd><span data-control-action="forward">W</span> <span data-control-action="left">A</span> <span data-control-action="backward">S</span> <span data-control-action="right">D</span></kbd><span>移动</span></div>
+        <div><kbd>鼠标</kbd><span>观察</span></div>
+        <div><kbd data-control-action="jump">空格</kbd><span>跳跃 / 上升</span></div>
+        <div><kbd data-control-action="sprint">左 Ctrl</kbd><span>跑步 / 飞行加速</span></div>
+        <div><kbd>左键 / 右键</kbd><span>破坏 / 放置</span></div>
+        <div><kbd data-control-action="inventory">E</kbd><span>打开物品栏 / 创造背包</span></div>
+        <div><kbd>1–9 / 滚轮</kbd><span>选择快捷栏</span></div>
+        <div><kbd>双击跳跃键</kbd><span>切换飞行</span></div>
+        <div><kbd data-control-action="sneak">左 Shift</kbd><span>飞行下降</span></div>
+      </div>
+      <p class="fine-print">本项目不含任何原版游戏代码、材质、声音或商标资源。</p>
+    </div>
+  </main>
+
+  <section id="inventory-panel" class="overlay-panel" aria-label="创造模式背包">
+    <div class="panel inventory-window">
+      <div class="panel-heading">
+        <div>
+          <h2>创造模式背包</h2>
+          <p>选择下方快捷栏槽位，再点击方块取出；右键槽位可清空。</p>
+        </div>
+        <button id="inventory-close-button" class="pixel-button compact" type="button">返回游戏</button>
+      </div>
+      <div id="inventory-grid" class="inventory-grid"></div>
+      <div class="inventory-footer">
+        <span>快捷栏</span>
+        <div id="inventory-hotbar" class="inventory-hotbar"></div>
+      </div>
+      <p class="overlay-tip">按背包键关闭并继续游戏 · 按 Esc 关闭并暂停</p>
+    </div>
+  </section>
+
+
+  <section id="lan-panel" class="overlay-panel" aria-label="局域网联机">
+    <div class="panel lan-window">
+      <div class="panel-heading">
+        <div>
+          <h2>局域网联机</h2>
+          <p>主机浏览器保存世界并负责方块判定；本机 Node 服务只负责 WebSocket 转发。</p>
+        </div>
+        <button id="lan-close-button" class="pixel-button compact" type="button">返回</button>
+      </div>
+
+      <div class="lan-grid">
+        <label class="lan-field" for="lan-name-input">
+          <span>玩家名称</span>
+          <input id="lan-name-input" maxlength="20" value="玩家" autocomplete="nickname">
+        </label>
+        <label class="lan-field" for="lan-address-input">
+          <span>服务地址</span>
+          <input id="lan-address-input" value="localhost:8080" spellcheck="false" autocomplete="off">
+        </label>
+      </div>
+
+      <div class="lan-actions">
+        <button id="lan-host-button" class="pixel-button primary" type="button">创建主机房间</button>
+        <button id="lan-join-button" class="pixel-button network" type="button">加入主机房间</button>
+        <button id="lan-disconnect-button" class="pixel-button danger" type="button" disabled>断开并返回本地</button>
+      </div>
+
+      <div id="lan-status" class="lan-status" role="status">先运行 <b>start_lan.bat</b> 或 <b>start_lan.sh</b>，再创建或加入房间。</div>
+      <div class="lan-addresses">
+        <h3>可分享地址</h3>
+        <div id="lan-address-list">启动局域网服务后，这里会显示本机可供其他设备访问的地址。</div>
+      </div>
+      <div class="lan-architecture">
+        <div><strong>主机浏览器</strong><span>种子、脏区块、方块权限、玩家列表</span></div>
+        <i>⇄ WebSocket ⇄</i>
+        <div><strong>轻量中继</strong><span>不保存世界，只转发消息</span></div>
+        <i>⇄</i>
+        <div><strong>客户端</strong><span>本地生成自然区块，仅同步修改差异</span></div>
+      </div>
+      <p class="overlay-tip">同一 Wi‑Fi / 有线局域网内使用。Windows 防火墙首次询问时允许“专用网络”。</p>
+    </div>
+  </section>
+
+  <section id="settings-panel" class="overlay-panel" aria-label="游戏设置">
+    <div class="panel settings-window">
+      <div class="panel-heading">
+        <div>
+          <h2>设置</h2>
+          <p>设置保存在浏览器本地，与世界存档分离。</p>
+        </div>
+        <button id="settings-close-button" class="pixel-button compact" type="button">完成</button>
+      </div>
+
+      <div class="settings-section">
+        <h3>鼠标与画面</h3>
+        <label class="range-row" for="sensitivity-input">
+          <span>鼠标灵敏度</span>
+          <input id="sensitivity-input" type="range" min="0.2" max="3" step="0.05" value="1">
+          <output id="sensitivity-value">1.00×</output>
+        </label>
+        <label class="range-row" for="fov-input">
+          <span>视野范围</span>
+          <input id="fov-input" type="range" min="55" max="100" step="1" value="70">
+          <output id="fov-value">70°</output>
+        </label>
+        <div class="toggle-row">
+          <label><input id="invert-x-input" type="checkbox"> 反转水平视角</label>
+          <label><input id="invert-y-input" type="checkbox"> 反转垂直视角</label>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>声音</h3>
+        <label class="range-row" for="master-volume-input">
+          <span>主音量</span>
+          <input id="master-volume-input" type="range" min="0" max="100" step="1" value="80">
+          <output id="master-volume-value">80%</output>
+        </label>
+        <label class="range-row" for="effects-volume-input">
+          <span>音效音量</span>
+          <input id="effects-volume-input" type="range" min="0" max="100" step="1" value="85">
+          <output id="effects-volume-value">85%</output>
+        </label>
+        <label class="range-row" for="ambient-volume-input">
+          <span>环境音量</span>
+          <input id="ambient-volume-input" type="range" min="0" max="100" step="1" value="42">
+          <output id="ambient-volume-value">42%</output>
+        </label>
+        <div class="sound-actions">
+          <label><input id="mute-input" type="checkbox"> 静音</label>
+          <button id="sound-preview-button" class="pixel-button compact" type="button">试听音效</button>
+        </div>
+        <p class="settings-note">脚步、破坏与放置会根据草地、沙雪、石材、木材、玻璃、金属等材质切换音色。</p>
+      </div>
+
+      <div class="settings-section">
+        <h3>键位绑定</h3>
+        <div class="bindings-grid">
+          <div><span>向前</span><button class="binding-button" data-binding="forward" type="button">W</button></div>
+          <div><span>向后</span><button class="binding-button" data-binding="backward" type="button">S</button></div>
+          <div><span>向左</span><button class="binding-button" data-binding="left" type="button">A</button></div>
+          <div><span>向右</span><button class="binding-button" data-binding="right" type="button">D</button></div>
+          <div><span>跳跃 / 上升</span><button class="binding-button" data-binding="jump" type="button">空格</button></div>
+          <div><span>疾跑 / 加速</span><button class="binding-button" data-binding="sprint" type="button">左 Ctrl</button></div>
+          <div><span>下蹲 / 下降</span><button class="binding-button" data-binding="sneak" type="button">左 Shift</button></div>
+          <div><span>创造背包</span><button class="binding-button" data-binding="inventory" type="button">E</button></div>
+          <div><span>飞行速度档</span><button class="binding-button" data-binding="speed" type="button">F</button></div>
+        </div>
+      </div>
+      <button id="settings-reset-button" class="pixel-button danger" type="button">恢复默认设置</button>
+    </div>
+  </section>
+
+  <div id="loading" class="visible">
+    <div class="loading-box">
+      <div class="loading-title">构筑方块世界</div>
+      <div class="progress"><span id="progress-bar"></span></div>
+      <div id="loading-text">初始化 WebGL…</div>
+    </div>
+  </div>
+
+  <script>
+  (() => {
+    const KEY = 'voxel-gameplay-mode-v1';
+    const valid = mode => mode === 'survival' || mode === 'creative';
+    let selected = localStorage.getItem(KEY);
+    if (!valid(selected)) selected = 'survival';
+    window.VoxelModePreference = {
+      get: () => selected,
+      set: mode => {
+        if (!valid(mode)) return selected;
+        selected = mode;
+        try { localStorage.setItem(KEY, mode); } catch {}
+        window.dispatchEvent(new CustomEvent('voxel-mode-change', { detail: { mode } }));
+        return selected;
+      }
+    };
+    const paint = mode => {
+      const survival = mode === 'survival';
+      const sb = document.getElementById('survival-mode-btn');
+      const cb = document.getElementById('creative-mode-btn');
+      const desc = document.getElementById('mode-description');
+      if (sb) { sb.classList.toggle('primary', survival); sb.textContent = survival ? '生存模式 ✓' : '生存模式'; sb.setAttribute('aria-pressed', String(survival)); }
+      if (cb) { cb.classList.toggle('primary', !survival); cb.textContent = !survival ? '创造模式 ✓' : '创造模式'; cb.setAttribute('aria-pressed', String(!survival)); }
+      if (desc) desc.textContent = survival
+        ? '当前：生存模式 · 有生命、饥饿、工具耐久、挖掘硬度和生物'
+        : '当前：创造模式 · 无限方块、瞬间破坏并允许飞行';
+    };
+    document.addEventListener('DOMContentLoaded', () => {
+      paint(selected);
+      document.getElementById('survival-mode-btn')?.addEventListener('click', () => paint(window.VoxelModePreference.set('survival')));
+      document.getElementById('creative-mode-btn')?.addEventListener('click', () => paint(window.VoxelModePreference.set('creative')));
+    }, { once: true });
+    window.addEventListener('voxel-mode-change', event => paint(event.detail.mode));
+  })();
+  </script>
+  <script>
+    (() => {
+      const showFatal = message => {
+        const text = document.getElementById('loading-text');
+        const bar = document.getElementById('progress-bar');
+        if (text) text.textContent = '启动脚本错误：' + message;
+        if (bar) { bar.style.width = '100%'; bar.style.background = '#b64d4d'; }
+      };
+      window.addEventListener('error', event => showFatal(event.message || '未知 JavaScript 错误'));
+      window.addEventListener('unhandledrejection', event => showFatal(event.reason?.message || String(event.reason || 'Promise 错误')));
+      window.__voxelBootWatchdog = setTimeout(() => {
+        const text = document.getElementById('loading-text');
+        if (text && text.textContent === '初始化 WebGL…') {
+          showFatal('app.js 没有开始执行。请确认地址栏是 localhost:8080，并按 Ctrl+Shift+R 清除旧缓存。');
+        }
+      }, 4000);
+    })();
+  </script>
+  <script src="js/noise.js?v=survival-startup-5"></script>
+  <script src="js/textures.js?v=survival-startup-5"></script>
+  <script src="js/audio.js?v=survival-startup-5"></script>
+  <script src="js/lan.js?v=survival-startup-5"></script>
+  <script src="js/app.js?v=inventory-crafting-textures-v9"></script>
+</body>
+</html>

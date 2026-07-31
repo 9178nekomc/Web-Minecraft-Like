@@ -1,0 +1,21 @@
+Voxel Creative 局域网启动说明
+================================
+
+你看到以下日志时，说明误用了 Python 静态服务器：
+  Serving HTTP on ...
+  GET /_lan/info 404
+  GET /ws 404
+
+Python http.server 不能处理 WebSocket。
+
+正确启动：
+1. 关闭原来的 Python 服务窗口。
+2. 确认电脑已安装 Node.js 18 或更高版本。
+3. Windows 双击“启动局域网联机.bat”或“start_lan.bat”。
+   macOS/Linux 运行 ./start_lan.sh。
+4. 正确窗口标题会显示 Voxel Creative LAN Server，终端会输出：
+   Voxel Creative 局域网轻量服务已启动
+5. 主机浏览器打开 http://localhost:8080。
+6. 其他设备打开终端列出的 http://192.168.x.x:8080 地址。
+
+不要用：python -m http.server 8080
