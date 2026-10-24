@@ -10,3 +10,7 @@ dist/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# generate_textures.py 的产物（可重新生成）
+assets/atlas.png
+assets/textures/
