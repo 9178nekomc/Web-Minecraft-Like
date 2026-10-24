@@ -1,0 +1,12 @@
+# 依赖与构建产物
+node_modules/
+dist/
+
+# 运行期输出
+*.log
+
+# IDE 与系统
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
